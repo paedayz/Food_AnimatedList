@@ -12,7 +12,9 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final key = GlobalKey<AnimatedListState>();
   final items = List.from(Data.shoppingList);
+  final items2 = List.from(Data.shoppingList);
   final removedItems = [];
+  TextEditingController _controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +25,31 @@ class _HomeState extends State<Home> {
         color: Colors.purple[200],
         child: Column(
           children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(hintText: 'Search'),
+              onChanged: (text) {
+                print(text);
+                List deleteList = [];
+                String textLowercase = text.toLowerCase();
+                items2.asMap().forEach((index, element) {
+                  String foodLowercase = element.title.toLowerCase();
+                  if (!foodLowercase.contains(textLowercase)) {
+                    deleteList.add(element);
+                  } else if (foodLowercase.contains(textLowercase) &&
+                      items.indexOf(element) == -1) {
+                    insertItem(items.length, element);
+                  }
+                });
+
+                deleteList.forEach((element) {
+                  int deleteIndex = items.indexOf(element);
+                  if (items.indexOf(element) != -1) {
+                    removeItem(deleteIndex);
+                  }
+                });
+              },
+            ),
             Expanded(
               child: AnimatedList(
                 key: key,
@@ -31,24 +58,11 @@ class _HomeState extends State<Home> {
                     buildItem(items[index], index, animation),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: buildInsertButton(),
-            )
           ],
         ),
       ),
     );
   }
-
-  Widget buildInsertButton() => RaisedButton(
-        onPressed: () => insertItem(0, Data.shoppingList.first),
-        child: Text(
-          'Insert item',
-          style: TextStyle(fontSize: 20),
-        ),
-        color: Colors.white,
-      );
 
   Widget buildItem(item, int index, Animation<double> animation) {
     return ShoppingItemWidget(
